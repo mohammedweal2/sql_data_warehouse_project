@@ -1,0 +1,75 @@
+use DWH_Project;
+go
+
+create or alter procedure bronze.load_bronze as
+begin
+declare @start_time datetime, @end_time datetime;
+begin try
+print'===========================================';
+print 'loading Bronze layer';
+print'===========================================';
+
+print'===========================================';
+print 'loading CRM Tables';
+print'===========================================';
+
+set @start_time = GETDATE();
+Bulk insert bronze.crm_customer_info
+from 'D:\sql DWH Project\datasets\source_crm\cust_info.csv'
+with(
+firstrow =2,fieldterminator =',',tablock
+);
+set @end_time = GETDATE();
+print'>> load Duration: ' + cast(datediff(second,@start_time,@end_time) as nvarchar) + ' seconds';
+
+set @start_time = GETDATE();
+Bulk insert bronze.crm_prd_info
+from 'D:\sql DWH Project\datasets\source_crm\prd_info.csv'
+with(
+firstrow =2,fieldterminator =',',tablock
+);
+set @end_time = GETDATE();
+print'>> load Duration: ' + cast(datediff(second,@start_time,@end_time) as nvarchar) + ' seconds';
+
+set @start_time = GETDATE();
+Bulk insert bronze.crm_sales_details
+from 'D:\sql DWH Project\datasets\source_crm\sales_details.csv'
+with 
+(firstrow = 2 , fieldterminator =',',tablock
+);
+set @end_time = GETDATE();
+print'>> load Duration: ' + cast(datediff(second,@start_time,@end_time) as nvarchar) + ' seconds';
+
+
+print'====================================';
+print'Loading The ERP Tables';
+print'====================================';
+
+set @start_time = getdate()
+Bulk insert bronze.erp_cust_az12
+from 'D:\sql DWH Project\datasets\source_erp\CUST_AZ12.csv'
+with 
+(firstrow = 2 , fieldterminator =',',tablock
+);
+
+
+set @start_time = getdate()
+Bulk insert bronze.erp_loc_a101
+from 'D:\sql DWH Project\datasets\source_erp\LOC_A101.csv'
+with 
+(firstrow = 2 , fieldterminator =',',tablock
+);
+print'>> load Duration: ' + cast(datediff(second,@start_time,@end_time) as nvarchar) + ' seconds';
+
+Bulk insert bronze.erp_px_cat_g1v2
+from 'D:\sql DWH Project\datasets\source_erp\PX_CAT_G1V2.csv'
+with 
+(firstrow = 2 , fieldterminator =',',tablock
+);
+
+end try
+begin catch 
+end catch
+end
+
+exec bronze.load_bronze
